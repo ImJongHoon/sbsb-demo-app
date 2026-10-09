@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
 
-app = FastAPI(title="NOVA Workspace")
+app = FastAPI(title="banchan Workspace")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -13,7 +13,7 @@ def read_root() -> str:
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b1020" />
-  <title>NOVA — Work in one orbit</title>
+  <title>banchan — Work in one orbit</title>
   <style>
     :root { --ink:#0b1020; --paper:#f6f4ee; --lime:#c7ff4a; --violet:#8c7cff; --line:rgba(11,16,32,.14); }
     * { box-sizing:border-box; }
@@ -65,7 +65,7 @@ def read_root() -> str:
 </head>
 <body>
   <nav class="shell">
-    <a class="logo" href="#">NOVA<i></i></a>
+    <a class="logo" href="#">banchan<i></i></a>
     <div class="links"><a href="#features">Features</a><a href="#about">About</a><a class="pill" href="#start">Start free</a></div>
   </nav>
   <main>
@@ -73,10 +73,10 @@ def read_root() -> str:
       <div>
         <div class="eyebrow">The calm workspace</div>
         <h1>Work in<br><span>one orbit.</span></h1>
-        <p class="lead">흩어진 업무와 대화를 하나의 흐름으로. NOVA는 팀이 중요한 일에만 집중하도록 프로젝트의 모든 신호를 정리합니다.</p>
+        <p class="lead">흩어진 업무와 대화를 하나의 흐름으로. banchan은 팀이 중요한 일에만 집중하도록 프로젝트의 모든 신호를 정리합니다.</p>
         <div class="actions"><a class="primary" id="start" href="#features">무료로 시작하기</a><a class="secondary" href="#features">둘러보기 →</a></div>
       </div>
-      <div class="board" aria-label="NOVA product preview">
+      <div class="board" aria-label="banchan product preview">
         <div class="board-head"><div class="dots"><i></i><i></i><i></i></div><div class="version">RELEASE 2.0</div></div>
         <div class="card"><small>Weekly momentum</small><h2>Design system sprint</h2><div class="metric"><strong>84%</strong><span>↑ 12% this week</span></div></div>
         <div class="tasks"><div class="task"><em>IN REVIEW</em><b>Mobile navigation</b></div><div class="task"><em>NEXT UP</em><b>Launch checklist</b></div></div>
@@ -92,7 +92,7 @@ def read_root() -> str:
       </div>
     </section>
   </main>
-  <footer class="shell" id="about"><span>© 2026 NOVA LABS</span><span>Built for focused teams.</span></footer>
+  <footer class="shell" id="about"><span>© 2026 banchan LABS</span><span>Built for focused teams.</span></footer>
 </body>
 </html>"""
 
