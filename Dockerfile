@@ -1,29 +1,35 @@
 FROM python:3.12-slim-bookworm
 
-# Create a non-root user and app directory
-ENV PYTHONDONTWRITEBYTECODE=1 \
+# Create a non-root user and group
+ENV APP_HOME=/app \
     PYTHONUNBUFFERED=1 \
-    POETRY_VIRTUALENVS_CREATE=false \
-    APP_HOME=/app
+    PIP_NO_CACHE_DIR=1 \
+    POETRY_VIRTUALENVS_CREATE=false
 
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup --home ${APP_HOME} appuser
+RUN groupadd --gid 1000 app \
+ && useradd --uid 1000 --gid app --home-dir ${APP_HOME} --create-home --shell /bin/false app
 
 WORKDIR ${APP_HOME}
 
-# Install Python dependencies deterministically from requirements.txt
-# --prefer-binary helps avoid building from source when wheels are available.
-# Do not install OS build tools; requirements are expected to provide binary wheels.
+# Install Python dependencies deterministically
+# Copy only requirements first to leverage Docker layer caching
 COPY requirements.txt .
-RUN pip install --no-cache-dir --disable-pip-version-check --prefer-binary -r requirements.txt
 
-# Copy application code and ensure correct ownership
-COPY --chown=appuser:appgroup . .
+# Use pip to install exact/locked deps from requirements.txt
+RUN python -m pip install --upgrade pip setuptools \
+ && pip install --no-cache-dir --requirement requirements.txt
 
-# Use non-root user
-USER appuser
+# Copy application code
+COPY . .
 
-# Expose the port the app serves on and run Uvicorn binding to 0.0.0.0
+# Ensure app files are owned by non-root user
+RUN chown -R app:app ${APP_HOME}
+
+# Switch to non-root user
+USER app
+
+# Expose the port used by uvicorn
 EXPOSE 8000
 
-# Runtime command: single worker Uvicorn suitable for containerized deployments.
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--limit-concurrency", "100"]
+# Run the application; bind to 0.0.0.0 for container networking
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "auto", "--workers", "1"]
