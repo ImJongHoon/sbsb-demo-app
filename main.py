@@ -72,7 +72,7 @@ def read_root() -> str:
     <section class="hero shell">
       <div>
         <div class="eyebrow">The calm workspace</div>
-        <h1>Work in<br><span>six orbit.</span></h1>
+        <h1>Work in<br><span>seven orbit.</span></h1>
         <p class="lead">흩어진 업무와 대화를 하나의 흐름으로. banchan은 팀이 중요한 일에만 집중하도록 프로젝트의 모든 신호를 정리합니다.</p>
         <div class="actions"><a class="primary" id="start" href="#features">무료로 시작하기</a><a class="secondary" href="#features">둘러보기 →</a></div>
       </div>
