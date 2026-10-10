@@ -1,33 +1,29 @@
 FROM python:3.12-slim-bookworm
 
-# Set environment
-ENV PYTHONUNBUFFERED=1 \
+# Create a non-root user and app directory
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
     POETRY_VIRTUALENVS_CREATE=false \
-    PATH=/home/app/.local/bin:$PATH
+    APP_HOME=/app
 
-# Create non-root user
-RUN useradd --create-home --home-dir /home/app --shell /bin/bash app
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup --home ${APP_HOME} appuser
 
-WORKDIR /app
+WORKDIR ${APP_HOME}
 
 # Install Python dependencies deterministically from requirements.txt
-# Copy only requirements first to leverage layer caching
-COPY requirements.txt ./
+# --prefer-binary helps avoid building from source when wheels are available.
+# Do not install OS build tools; requirements are expected to provide binary wheels.
+COPY requirements.txt .
+RUN pip install --no-cache-dir --disable-pip-version-check --prefer-binary -r requirements.txt
 
-# Use pip to install pinned dependencies without caches
-RUN python -m pip install --upgrade pip setuptools wheel \
- && python -m pip install --no-cache-dir --require-hashes -r requirements.txt || \
-    (python -m pip install --no-cache-dir -r requirements.txt)
+# Copy application code and ensure correct ownership
+COPY --chown=appuser:appgroup . .
 
-# Copy application files
-COPY . /app
+# Use non-root user
+USER appuser
 
-# Ensure correct ownership
-RUN chown -R app:app /app
-
-USER app
-
-# Expose the typical FastAPI/uvicorn port and run the server binding to 0.0.0.0
+# Expose the port the app serves on and run Uvicorn binding to 0.0.0.0
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "auto", "--http", "auto"]
+# Runtime command: single worker Uvicorn suitable for containerized deployments.
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--limit-concurrency", "100"]
