@@ -14,6 +14,7 @@ RUN python -m pip install --upgrade pip setuptools wheel \
 
 # Copy application code
 COPY --chown=app:app . /app
+RUN mkdir -p /app/data && chown -R app:app /app
 
 USER app
 
