@@ -1,32 +1,28 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.11-slim-bookworm
 
-# Use a non-root user
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    POETRY_VIRTUALENVS_CREATE=false \
-    PATH="/home/app/.local/bin:${PATH}"
+# Set environment for deterministic Python behavior
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000
 
-# Create app user and directory
-RUN useradd --create-home --home-dir /home/app --shell /bin/bash app
 WORKDIR /app
 
-# Install pip requirements deterministically
+# Install Python dependencies first (cache layer)
 COPY requirements.txt .
-# Upgrade core packaging tools then install requirements.
-# Keep installation minimal; many wheels are available for pinned versions.
+# Upgrade pip and install from requirements.txt without cache to keep image smaller
 RUN python -m pip install --upgrade pip setuptools wheel \
- && python -m pip install --no-cache-dir -r requirements.txt \
- && rm -rf /root/.cache/pip
+    && pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . /app
-RUN chown -R app:app /app
+COPY . .
 
-# Switch to non-root user
+# Create non-root user and give ownership of application files
+RUN groupadd --gid 1000 app && useradd --uid 1000 --gid app --shell /bin/sh --create-home app \
+    && chown -R app:app /app
+
 USER app
 
-# Expose default FastAPI/uvicorn port
+# Expose application port and run uvicorn binding to 0.0.0.0
 EXPOSE 8000
 
-# Run the app with uvicorn, binding to 0.0.0.0
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "auto", "--http", "auto"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
